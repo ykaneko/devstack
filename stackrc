@@ -106,7 +106,7 @@ HEAT_REPO=${GIT_BASE}/heat-api/heat.git
 HEAT_BRANCH=master              # 27Sep2012: ed99838c28
 
 # ryu service
-RYU_REPO=https://github.com/osrg/ryu.git
+RYU_REPO=${GIT_BASE}/osrg/ryu.git
 RYU_BRANCH=master
 
 # Nova hypervisor configuration.  We default to libvirt with **kvm** but will
