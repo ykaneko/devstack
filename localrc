@@ -1,0 +1,54 @@
+HOST_NAME=$(hostname)
+SERVICE_HOST_NAME=ryu1
+SERVICE_HOST=192.168.0.10
+
+if [ "$HOST_NAME" = "$SERVICE_HOST_NAME" ]; then
+    # controller node
+    disable_service n-net
+    enable_service q-svc q-agt q-dhcp q-l3 quantum ryu
+else
+    # compute node
+    disable_all_services
+    enable_service rabbit n-cpu quantum q-agt
+fi
+
+FLOATING_RANGE=192.168.200.0/24
+Q_PLUGIN=ryu
+INSTANCES_PATH=/var/lib/instances
+
+Q_HOST=$SERVICE_HOST
+MYSQL_HOST=$SERVICE_HOST
+RABBIT_HOST=$SERVICE_HOST
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+KEYSTONE_AUTH_HOST=$SERVICE_HOST
+KEYSTONE_SERVICE_HOST=$SERVICE_HOST
+
+# ryu
+RYU_API_HOST=$SERVICE_HOST
+RYU_OFP_HOST=$SERVICE_HOST
+RYU_APPS=ryu.app.gre_tunnel,ryu.app.quantum_adapter,ryu.app.rest,ryu.app.rest_conf_switch,ryu.app.rest_tunnel,ryu.app.tunnel_port_updater,ryu.app.rest_quantum
+
+# repo/branch
+RYU_REPO=${GIT_BASE}/yamahata/ryu.git
+RYU_BRANCH=ryu-gre-tunnel-dec-03-2012
+
+QUANTUM_REPO=${GIT_BASE}/ykaneko/quantum.git
+QUANTUM_BRANCH=ryudev/folsom
+
+CINDER_BRANCH=stable/folsom
+NOVA_BRANCH=stable/folsom
+SWIFT_BRANCH=stable/folsom
+GLANCE_BRANCH=stable/folsom
+KEYSTONE_BRANCH=stable/folsom
+HORIZON_BRANCH=stable/folsom
+
+# password
+MYSQL_PASSWORD=mysql
+RABBIT_PASSWORD=rabbit
+SERVICE_TOKEN=service
+SERVICE_PASSWORD=admin
+ADMIN_PASSWORD=admin
+
+#RECLONE=yes
+# Uncomment the following line to save time by skipping checking of packages that need to be installed
+OFFLINE=True
