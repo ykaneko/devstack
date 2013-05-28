@@ -95,6 +95,8 @@ Q_ROUTER_NAME=${Q_ROUTER_NAME:-router1}
 # See _configure_quantum_common() for details about setting it up
 declare -a Q_PLUGIN_EXTRA_CONF_FILES
 
+Q_FAKEVM_HOST=${Q_FAKEVM_HOST:-$(uname -n)}
+
 if is_service_enabled quantum; then
     Q_RR_CONF_FILE=$QUANTUM_CONF_DIR/rootwrap.conf
     if [[ "$Q_USE_ROOTWRAP" == "False" ]]; then
@@ -217,6 +219,9 @@ function configure_quantum() {
     fi
     if is_service_enabled q-meta; then
         _configure_quantum_metadata_agent
+    fi
+    if is_service_enabled q-fakevm; then
+        _configure_quantum_fakevm_agent
     fi
 
     _configure_quantum_debug_command
@@ -383,6 +388,7 @@ function start_quantum_agents() {
     screen_it q-dhcp "cd $QUANTUM_DIR && python $AGENT_DHCP_BINARY --config-file $QUANTUM_CONF --config-file=$Q_DHCP_CONF_FILE"
     screen_it q-l3 "cd $QUANTUM_DIR && python $AGENT_L3_BINARY --config-file $QUANTUM_CONF --config-file=$Q_L3_CONF_FILE"
     screen_it q-meta "cd $QUANTUM_DIR && python $AGENT_META_BINARY --config-file $QUANTUM_CONF --config-file=$Q_META_CONF_FILE"
+    screen_it q-fakevm "cd $QUANTUM_DIR && python $AGENT_FAKEVM_BINARY --config-file $QUANTUM_CONF --config-file /$Q_PLUGIN_CONF_FILE --config-file $Q_FAKEVM_CONF_FILE --nova-config-file $NOVA_CONF"
 
     if is_service_enabled q-lbaas; then
         screen_it q-lbaas "cd $QUANTUM_DIR && python $AGENT_LBAAS_BINARY --config-file $QUANTUM_CONF --config-file=$LBAAS_AGENT_CONF_FILENAME"
@@ -542,6 +548,23 @@ function _configure_quantum_plugin_agent() {
 
     # Configure agent for plugin
     quantum_plugin_configure_plugin_agent
+}
+
+function _configure_quantum_fakevm_agent() {
+    AGENT_FAKEVM_BINARY="$QUANTUM_DIR/bin/quantum-fakevm-agent"
+    Q_FAKEVM_CONF_FILE=$QUANTUM_CONF_DIR/fakevm.ini
+
+    cp $QUANTUM_DIR/etc/fakevm.ini $Q_FAKEVM_CONF_FILE
+
+    iniset $Q_FAKEVM_CONF_FILE DEFAULT verbose True
+    iniset $Q_FAKEVM_CONF_FILE DEFAULT debug True
+    iniset $Q_FAKEVM_CONF_FILE DEFAULT root_helper "$Q_RR_COMMAND"
+    iniset $Q_FAKEVM_CONF_FILE FAKEVM host $Q_FAKEVM_HOST
+
+    t=$(type -t quantum_plugin_configure_fakevm_agent)
+    if [ "$t" = "function" ]; then
+        quantum_plugin_configure_fakevm_agent
+    fi
 }
 
 # _configure_quantum_service() - Set config files for quantum service

@@ -43,6 +43,11 @@ function quantum_plugin_configure_l3_agent() {
     _quantum_ovs_base_configure_l3_agent
 }
 
+function quantum_plugin_configure_fakevm_agent() {
+    iniset $Q_FAKEVM_CONF_FILE FAKEVM fakevm_agent_plugin quantum.fakevm.fakevm_agent_ryu.QuantumFakeVMAgentRyu
+    iniset $Q_FAKEVM_CONF_FILE FAKEVM use_tunnel True
+}
+
 function quantum_plugin_configure_plugin_agent() {
     # Set up integration bridge
     OVS_BRIDGE=${OVS_BRIDGE:-br-int}
